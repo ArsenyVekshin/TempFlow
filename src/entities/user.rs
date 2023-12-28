@@ -1,5 +1,8 @@
 use std::collections::HashMap;
+use std::ptr::null;
 use sha2::{Sha256, Digest};
+use crate::entities::rack::Rack;
+use crate::entities::sensor::Sensor;
 
 pub struct User {
     username: String,
@@ -26,7 +29,7 @@ impl User{
         return self.password == get_hash(password);
     }
 
-    pub fn alert(&self, rack: Rack, sensor: Sensor) {
+    pub fn alert(&self, rack: &Rack, sensor: Sensor) {
         println!("ALERT: Уведомить пользователя {}, контакт: {}", self.username, self.contact);
         if(rack != null) {
             print!("\t Ошибка тригера точки {}", sensor.name);

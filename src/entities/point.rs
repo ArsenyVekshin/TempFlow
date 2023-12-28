@@ -2,9 +2,9 @@
 use std::intrinsics::sqrtf32;
 
 pub struct Point {
-    x: f32,
-    y: f32,
-    z: f32
+    pub(crate) x: f32,
+    pub(crate) y: f32,
+    pub(crate) z: f32
 }
 
 impl Point {
@@ -18,7 +18,7 @@ impl Point {
 
     /// Создание новой точки с заданным смещением
     pub fn newOffsetPoint(&self, dx: f32, dy: f32, dz: f32) -> Point {
-        Point {
+        return Point {
             x: self.x + dx,
             y: self.y + dy,
             z: self.z + dz

@@ -1,6 +1,11 @@
+use std::fmt::format;
 use std::net::UdpSocket;
 use std::panic::catch_unwind;
 use std::ptr::null;
+use rand::Rng;
+use crate::entities::point::Point;
+use crate::entities::sensor::SensorType::UDP;
+
 
 enum SensorType {
     UDP,
@@ -17,20 +22,20 @@ struct Trigger {
 }
 
 pub struct Sensor {
-    name: String,
-    position: Point,
-    temp: f32,
-    trig: Trigger,
+    pub(crate) name: String,
+    pub(crate)position: Point,
+    pub(crate)temp: f32,
+    pub(crate)trig: Trigger,
     address: String,
     protocol: SensorType,
     key: String
 }
 
 impl Sensor{
-    fn request(&self) {
+    pub fn request(&mut self) {
         let mut buf = [0; 4];
         if(self.protocol == UDP){
-            let socket = UdpSocket::bind(self.address + " " + key)?;
+            let socket = UdpSocket::bind(format!("{} {}", &self.address, &self.key ))?;
             let (amt, src) = socket.recv_from(&mut buf)?;
         }
         try{
@@ -38,15 +43,15 @@ impl Sensor{
         }
     }
 
-    fn generateTemp(&self) {
-        self.temp = self.temp + (rand::thread_rng().gen_range(0, 100)/100 as f32);
+    pub fn generateTemp(&mut self) {
+        self.temp = self.temp + (rand::thread_rng().gen_range(0)/100 as f32);
     }
 
-    fn checkWarn(&self) -> bool {
+    pub fn checkWarn(&self) -> bool {
         return (self.temp <= self.trig.min) || (self.temp >= self.trig.max);
     }
 
-    fn isVirtual(&self) -> bool {
+    pub fn isVirtual(&self) -> bool {
         return self.address != null;
     }
 
