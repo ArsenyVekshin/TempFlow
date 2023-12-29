@@ -49,4 +49,6 @@ impl Room {
         file.write(b"endsolid ");
         file.write(self.name.as_bytes());
     }
+
+    pub fn isObstacleBetween()
 }
