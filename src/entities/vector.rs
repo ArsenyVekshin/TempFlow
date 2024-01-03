@@ -18,7 +18,7 @@ impl Vector {
     }
 
     /// Длинна вектора
-    fn length(&self) -> f32{
+    pub(crate) fn length(&self) -> f32{
         return (self.0**2 + self.1**2 + self.2**2).sqrt()
     }
 
