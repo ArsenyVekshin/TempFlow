@@ -1,5 +1,3 @@
-use std::io::read_to_string;
-use std::ptr::null;
 use crate::entities::point::Point;
 
 pub struct Vector(f32, f32, f32);
@@ -33,6 +31,10 @@ impl Vector {
     }
 
 
+    pub fn actToPoint(&self, point: &Point) -> Point {
+        return Point { x: self.0 + point.x, y: self.1 + point.y, z: self.2 + point.z };
+    }
+
     /// Проверка, находится ли точка в направленни действия вектора
     /// #### Аргументы
     /// * 'begin' - точка от которой отложен вектор
@@ -53,5 +55,4 @@ impl Vector {
         return Vector::new(begin, check).length() <= self.length() &&
                 self.inDirection(begin, check);
     }
-
 }

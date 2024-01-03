@@ -1,24 +1,23 @@
-use std::fmt::format;
 use std::fs::File;
 use std::io::Write;
+
 use crate::entities::point::Point;
 use crate::entities::rack::Rack;
 use crate::entities::sensor::Sensor;
 use crate::entities::user::User;
 use crate::utils::stl::wallsSTL;
 
-
 /// Контейнер для хранения данных о помещении
 pub struct Room {
-    name: String,
-    owner: User,
-    length: f32,
-    width: f32,
-    height: f32,
+    pub(crate) name: String,
+    pub(crate) owner: User,
+    pub length: &'static f32,
+    pub width: &'static f32,
+    pub height: &'static f32,
     /// Набор стоек в помещении
-    map: Vec<Rack>,
+    pub(crate) map: Vec<Rack>,
     /// Набор датчиков помещения
-    sensors: Vec<Sensor>,
+    pub(crate) sensors: Vec<Sensor>,
 }
 
 impl Room {
@@ -49,7 +48,7 @@ impl Room {
         file.write(self.name.as_bytes());
 
 
-        wallsSTL(&Point { x: 0.0, y: 0.0, z: 0.0 }, self.length, self.width, self.height, &mut file);
+        wallsSTL(&Point { x: 0.0, y: 0.0, z: 0.0 }, *self.length, *self.width, *self.height, &mut file);
         for rack in self.map {
             rack.toSTL(&mut file);
         }
@@ -58,5 +57,10 @@ impl Room {
         file.write(self.name.as_bytes());
     }
 
-    pub fn isObstacleBetween()
+    pub fn isInsideRack(&self, x: f32, y: f32, z: f32) -> bool {
+        for rack in self.map {
+            if (rack.isInside(Point { x, y, z })) { return true; }
+        }
+        return false;
+    }
 }
