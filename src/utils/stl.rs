@@ -1,12 +1,46 @@
 use std::fs::File;
 use std::io::Write;
 use crate::entities::point::Point;
+use crate::entities::room::Room;
+use crate::operators::gradient::GradientPoint;
+use crate::utils::colour::Colour;
+
+
+/// Запись треугольника в STL-файл
+/// #### Аргументы:
+/// * a,b,c - точки углов треугольника
+/// * binColour - цвет в бинарном виде
+/// * file - файл для записи
+pub fn triangleSTL(a: &Point, b: &Point, c: &Point, binColour: u16, file: &mut File){
+    for i in 0..3 { file.write(0f32.as_bytes());} // нормали (всегда 0 -> расчитывается автоматически)
+    for point in [a, b, c] {
+        for i in [point.x, point.y, point.z] {  // запишем vertex для каждой точки
+            file.write(i.as_bytes());
+        }
+    }
+    file.write(binColour.as_bytes()); // Attribute byte count
+}
+
+/// Запись грани в STL-файл
+/// #### Аргументы:
+/// * a,b,c,d - точки углов грани
+/// * binColour - цвет в бинарном виде
+/// * file - файл для записи
+pub fn plateSTL(a: &Point, b: &Point, c: &Point, d: &Point, binColour: u16, file: &mut File) {
+    triangleSTL(a, b, c, binColour, file);
+    triangleSTL(a, d, c, binColour, file);
+}
+
+
+
+
+
 /*
     Примечание: реализован перевод только граней и плоскостей параллельных осям!!
     TODO: Сделать возможность перевода обьектов не параллельных осям
 */
 
-pub fn plateSTL(p1: &Point, p2: &Point) -> String {
+/*pub fn plateSTL(p1: &Point, p2: &Point) -> String {
     let mut buff: String = "".to_string();
     buff += "facet normal 0 0 0\nouter loop\n";
     buff += format!("vertex {} {} {} \n", p1.x, p1.y, p1.z).as_str();
@@ -59,3 +93,6 @@ pub fn cubeSTL(p1: &Point, length: f32, width: f32, height: f32, file: &mut File
     file.write(plateSTL(&a, &b).as_bytes()); // нижняя грань XY
     file.write(plateSTL(&c, &d).as_bytes()); // верхняя грань XY
 }
+
+*/
+
