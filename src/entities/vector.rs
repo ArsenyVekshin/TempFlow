@@ -9,7 +9,7 @@ impl Vector {
     }
 
     pub fn invert(&self) -> Vector {
-        return Vector (-1*self.0, -1*self.1, -1*self.2);
+        return Vector (-self.0, -self.1, -self.2);
     }
 
     /// Скалярное произведение векторов
@@ -19,7 +19,7 @@ impl Vector {
 
     /// Длинна вектора
     pub(crate) fn length(&self) -> f32{
-        return (self.0**2 + self.1**2 + self.2**2).sqrt()
+        return (self.0.powf(2.0) + self.1.powf(2.0) + self.2.powf(2.0)).sqrt()
     }
 
     /// Поиск косинуса угла между векторами
@@ -43,7 +43,7 @@ impl Vector {
     pub fn inDirection(&self, begin: &Point, check: &Point) -> bool{
         let p_vector = Vector::new(begin, check);
         let angle = self.angleWith(&p_vector);
-        return  angle<3.sqrt()/2 && angle>-3.sqrt()/2;
+        return  angle<3f32.sqrt()/2f32 && angle>-3f32.sqrt()/2f32;
     }
 
     /// Проверка, находится ли точка в области действия вектора

@@ -21,9 +21,9 @@ impl Colour {
     pub fn newFromTemp(value: f32) -> Colour {
         let delta = value - GREEN_COLOUR_TEMP;
         return Colour {
-            r: if (delta > 0.0) {(32 * (delta/GREEN_COLOUR_TEMP)) % 32} else {0} ,
-            g: (32 * (1 - delta/GREEN_COLOUR_TEMP)) % 32,
-            b: if (delta < 0.0) {(-32 * (delta/GREEN_COLOUR_TEMP)) % 32} else {0}
+            r: if (delta > 0.0) {(32.0 * (delta/GREEN_COLOUR_TEMP)) as u8 % 32} else {0} ,
+            g: (32.0 * (1.0 - delta/GREEN_COLOUR_TEMP)) as u8 % 32,
+            b: if (delta < 0.0) {(-32.0 * (delta/GREEN_COLOUR_TEMP)) as u8 % 32} else {0}
         }
     }
 
@@ -31,9 +31,9 @@ impl Colour {
     /// Для стандартов: ```VisCam и SolidView```
     pub fn convertAsBinary1(&self) -> u16 {
         let mut out: u16 = 0b1000000000000000;  // флаг "у фигуры свой цвет" (15 бит)
-        out += self.b;          // b на позициях 0-4
-        out += self.g << 5 ;    // g на позициях 5-9
-        out += self.r << 10 ;   // r на позициях 10-14
+        out += (self.b as u16);          // b на позициях 0-4
+        out += (self.g as u16) << 5 ;    // g на позициях 5-9
+        out += (self.r as u16) << 10 ;   // r на позициях 10-14
         return out;
     }
 
@@ -41,9 +41,9 @@ impl Colour {
     /// Для стандартов: ```Materialise Magics```
     pub fn convertAsBinary2(&self) -> u16 {
         let mut out: u16 = 0b1000000000000000;  // флаг "у фигуры свой цвет" (15 бит)
-        out += self.r;          // r на позициях 0-4
-        out += self.g << 5 ;    // g на позициях 5-9
-        out += self.b << 10 ;   // b на позициях 10-14
+        out += (self.r as u16);          // r на позициях 0-4
+        out += (self.g as u16) << 5 ;    // g на позициях 5-9
+        out += (self.b as u16) << 10 ;   // b на позициях 10-14
         return out;
     }
 

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::ptr::null;
+use serde::{Deserialize, Serialize};
 use sha2::{Sha256, Digest};
 use crate::entities::rack::Rack;
 use crate::entities::sensor::Sensor;
@@ -31,12 +32,8 @@ impl User{
 
     pub fn alert(&self, rack: &Rack, sensor: Sensor) {
         println!("ALERT: Уведомить пользователя {}, контакт: {}", self.username, self.contact);
-        if(rack != null) {
-            print!("\t Ошибка тригера точки {}", sensor.name);
-        }
-        if(rack != null) {
-            print!(", шкаф: {}", rack.name);
-        }
+        print!("\t Ошибка тригера точки {}", sensor.name);
+        print!(", шкаф: {}", rack.name);
         println!();
     }
 }
