@@ -1,12 +1,14 @@
 use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::Write;
+use image::{Rgb, RgbImage};
 
 use crate::entities::point::Point;
 use crate::entities::rack::Rack;
 use crate::entities::sensor::Sensor;
 use crate::entities::user::User;
-use crate::operators::gradient::{calcGradient, HEIGHT_STEP, POINTS_PER_SQRT_METER};
+use crate::operators::gradient::{calcGradient, HEIGHT_STEP, POINTS_PER_METER, POINTS_PER_SQRT_METER};
+use crate::utils::colour::Colour;
 use crate::utils::stl::{gradientLayerSTL, wallsSTL};
 
 /// Контейнер для хранения данных о помещении
@@ -96,6 +98,26 @@ impl Room {
             }
             gradientLayerSTL(self,&gradientPack[i], HEIGHT_STEP*i as f32, &mut file);
         }
+    }
+
+    pub fn saveAsJPG(&self) {
+        let gradientPack = calcGradient(&self);
+        println!(); //DEBUG
+        for i in 0..(self.height / HEIGHT_STEP) as usize {
+            let filename = format!("C:/TempFlowOut/{}/{}.jpg", &self.name, i as f32 * HEIGHT_STEP);
+            let mut img = RgbImage::new((self.length * POINTS_PER_METER) as u32, (self.width*POINTS_PER_METER) as u32);
+            println!("Сохраним модель для слоя {} в файл {}", i, filename); //DEBUG
+
+            let X_SIZE = (self.length*POINTS_PER_METER) as usize;
+            for y in 0..(self.width*POINTS_PER_METER) as usize{
+                for x in 0..X_SIZE as usize{
+                    let pixel = Colour::newFromTempJPG(gradientPack[i][x+y*X_SIZE].value);
+                    img.put_pixel(x as u32, y as u32, Rgb([pixel.r, pixel.g, pixel.b]))
+                }
+            }
+            img.save(filename).unwrap();
+        }
+
     }
 
     pub fn isInsideRack(&self, point: &Point) -> bool {

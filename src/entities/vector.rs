@@ -4,6 +4,8 @@ pub struct Vector(pub f32, pub f32, pub f32);
 
 impl Vector {
 
+    pub fn 
+
     pub fn new(begin: &Point, end: &Point) -> Vector {
         return Vector(end.x-begin.x, end.y-begin.y, end.y-begin.y);
     }

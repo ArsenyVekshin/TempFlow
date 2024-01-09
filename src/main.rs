@@ -11,20 +11,20 @@ use crate::entities::user::User;
 use crate::entities::vector::Vector;
 use crate::managers::collectionManager::CollectionManager;
 use crate::operators::gradient::HEIGHT_STEP;
-use crate::utils::stl::plateSTL;
+use crate::utils::stl::{plateSTL, wallsSTL};
 
 pub mod entities { pub mod point; pub mod rack; pub mod room; pub mod sensor; pub mod user; pub mod vector;}
-pub mod utils { pub mod stl; pub mod colour;}
+pub mod utils { pub mod stl; pub mod colour; }
 pub mod operators {pub mod gradient;}
 pub mod managers {pub mod collectionManager;}
 
 
-fn demoPlateSTL(){
+fn demoPlateSTL(rack: &Rack){
     let filename = format!("C:/TempFlowOut/test.stl");
     let mut file = File::create(filename).unwrap();
     let header: [u8; 10] = [0; 10]; // записываем пустой заголовок -> файл будет интерпретирован как бинарный
     file.write(&header);
-    file.write(2_u32.to_ne_bytes().as_ref());   // количество треугольнико в конечноом файле
+    file.write(10_u32.to_ne_bytes().as_ref());   // количество треугольнико в конечноом файле
 
     plateSTL(&Point { x: 0.0, y: 0.0, z: 0.0 },
              &Point { x: 1.0, y: 0.0, z: 0.0 },
@@ -32,12 +32,15 @@ fn demoPlateSTL(){
              &Point { x: 0.0, y: 1.0, z: 0.0 },
              0,
              &mut file);
+
+    rack.toSTL(&mut file);
 }
 
 fn main() {
-    demoPlateSTL();
+
     let mut manager: CollectionManager = CollectionManager::new();
-    initDemoRack(&mut manager);
+    initDemoRoom(&mut manager);
+    demoPlateSTL(&manager.rooms[0].map[0]);
 
     println!("ROOM:");
     manager.rooms[0].print();
@@ -80,7 +83,7 @@ fn main() {
 }
 
 
-fn initDemoRack(manager: &mut CollectionManager) {
+fn initDemoRoom(manager: &mut CollectionManager) {
     manager.users.push(User{
         id: 0,
         username: "admin".to_string(),

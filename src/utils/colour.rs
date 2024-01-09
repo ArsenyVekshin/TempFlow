@@ -5,11 +5,10 @@ const BLUE_COLOUR_TEMP: f32 = 0.0;
 
 
 pub struct Colour {
-    r: u8,
-    g: u8,
-    b: u8
+    pub r: u8,
+    pub g: u8,
+    pub b: u8
 }
-
 
 impl Colour {
 
@@ -18,7 +17,7 @@ impl Colour {
     }
 
     /// Генерирует цвет из значения температуры в диапазоне (синий) 0 -> 100 (красный)
-    pub fn newFromTemp(value: f32) -> Colour {
+    pub fn newFromTempSTL(value: f32) -> Colour {
         let delta = value - GREEN_COLOUR_TEMP;
         return Colour {
             r: if (delta > 0.0) {(32.0 * (delta/GREEN_COLOUR_TEMP)) as u8 % 32} else {0} ,
@@ -26,6 +25,17 @@ impl Colour {
             b: if (delta < 0.0) {(-32.0 * (delta/GREEN_COLOUR_TEMP)) as u8 % 32} else {0}
         }
     }
+
+    /// Генерирует цвет из значения температуры в диапазоне (синий) 0 -> 100 (красный)
+    pub fn newFromTempJPG(value: f32) -> Colour {
+        let delta = value - GREEN_COLOUR_TEMP;
+        return Colour {
+            r: if (delta > 0.0) {(255.0 * (delta/GREEN_COLOUR_TEMP)) as u8} else {0} ,
+            g: (255.0 * (1.0 - delta/GREEN_COLOUR_TEMP)) as u8 % 32,
+            b: if (delta < 0.0) {(-255.0 * (delta/GREEN_COLOUR_TEMP)) as u8} else {0}
+        }
+    }
+
 
     /// Конвертация цвета в бинарный вид, для сохранения в stl
     /// Для стандартов: ```VisCam и SolidView```

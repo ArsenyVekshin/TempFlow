@@ -44,7 +44,7 @@ impl Sensor{
     }
 
     pub fn generateTemp(&mut self) {
-        let gen: f32 = rand::thread_rng().gen_range(0.0..100.0);
+        let gen: f32 = rand::thread_rng().gen_range(40.0..80.0);
         self.temp = self.temp + (gen);
     }
 

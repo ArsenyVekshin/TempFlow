@@ -5,10 +5,10 @@ use crate::entities::point::Point;
 use crate::entities::room::Room;
 
 ///Количество точек на прямой длинной 1м
-pub(crate) const POINTS_PER_METER: f32 = 25.0;
+pub(crate) const POINTS_PER_METER: f32 = 50.0;
 
 ///Количество точек на площади 1м2
-pub(crate) const POINTS_PER_SQRT_METER: i32 = 625;
+pub(crate) const POINTS_PER_SQRT_METER: i32 = 2500у;
 
 ///растояние от датчика, при котором температура полностью совпадает с его показаниями
 const SENSOR_VALID_DISTANCE: f32 = 0.1;

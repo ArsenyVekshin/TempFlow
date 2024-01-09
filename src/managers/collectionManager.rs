@@ -75,8 +75,8 @@ impl CollectionManager {
 
         println!("requested room named {}", room.name);
         room.updateSensors();
-        room.saveAsSTL();
-
+        //room.saveAsSTL();
+        room.saveAsJPG();
         return Ok(true);
     }
 
