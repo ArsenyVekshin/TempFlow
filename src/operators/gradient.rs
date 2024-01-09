@@ -5,10 +5,10 @@ use crate::entities::point::Point;
 use crate::entities::room::Room;
 
 ///Количество точек на прямой длинной 1м
-pub(crate) const POINTS_PER_METER: f32 = 25.0;
+pub(crate) const POINTS_PER_METER: f32 = 50.0;
 
 ///Количество точек на площади 1м2
-pub(crate) const POINTS_PER_SQRT_METER: i32 = 625;
+pub(crate) const POINTS_PER_SQRT_METER: i32 = 2500;
 
 ///растояние от датчика, при котором температура полностью совпадает с его показаниями
 const SENSOR_VALID_DISTANCE: f32 = 0.1;
@@ -45,12 +45,12 @@ impl GradientPoint {
     pub fn calcImpactBy(&mut self, point: &GradientPoint) -> bool {
         if (self.isDefault()) { // данная точка "пустая"
             self.value = point.value;
-            self.power = if (point.power > 0) { point.power - 1 } else { 0 };
+            self.power = if (point.power > 0) { point.power - POINTS_PER_METER as i32 } else { 0 }; //-1
             return true;
         } else if (point.power - self.power > POINTS_PER_METER as i32) {
             self.value = (self.value * (self.power as f32) + point.value * (point.power as f32)) / (self.power + point.power) as f32;
             self.power = point.power - self.power;
-            return true;
+            //return true;
         } else if ((self.value - point.value).abs() > 1.0) {
             self.value = (self.value + point.value) / 2.0
 

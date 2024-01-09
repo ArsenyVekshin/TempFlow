@@ -25,8 +25,12 @@ pub struct Rack {
 impl Rack {
 
     pub fn print(&self) {
-        println!("Rack( id: {}, name: {}, length: {}, width: {}, height: {} )\n",
+        print!("Rack( id: {}, name: {}, length: {}, width: {}, height: {} ) - ",
                  self.id, self.name, self.length, self.width, self.height);
+        self.leftAngle.print();
+        print!(" hotend: ");
+        self.hotend.print();
+        println!();
     }
 
     /// Запросить данные со всех датчиков в помещении
@@ -92,7 +96,7 @@ impl Rack {
     pub fn addSensAt(&mut self, mut sensor: Sensor, pos: u8){
         sensor.position.x = self.getCenter().x;
         sensor.position.y = self.getCenter().y;
-        sensor.position.y = self.height / self.size as f32 * pos as f32;
+        sensor.position.z = self.height / self.size as f32 * pos as f32;
         self.serverSens.push(sensor);
     }
 }

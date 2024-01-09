@@ -69,8 +69,6 @@ fn main() {
                 break;
             }
             _ => {
-                println!("Извините, не понимаю ваш ответ. Пожалуйста, введите 'да' или 'нет'.");
-                println!("Вы ввели: {}", input);
                 println!("Команда принята - начат просчет");
                 manager.updateRoom(0);
                 println!("Расчеты завершены");
@@ -123,6 +121,8 @@ fn initDemoRack(manager: &mut CollectionManager) {
             id+=1;
         }
     }
+    manager.rooms[0].map.pop();
+
 
     // добавим серверные дачтики
     let mut id: u32 = 0;

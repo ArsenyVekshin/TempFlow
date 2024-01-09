@@ -98,6 +98,35 @@ impl Room {
         }
     }
 
+    pub fn saveAsJPG(&self) {
+        let gradientPack = calcGradient(&self);
+        println!(); //DEBUG
+        for i in 0..(self.height / HEIGHT_STEP) as usize {
+            let filename = format!("C:/TempFlowOut/{}/{}.jpg", &self.name, i as f32 * HEIGHT_STEP);
+            let mut img = RgbImage::new((self.length * POINTS_PER_METER) as u32, (self.width*POINTS_PER_METER) as u32);
+            println!("Сохраним модель для слоя {} в файл {}", i, filename); //DEBUG
+
+            let X_SIZE = (self.length*POINTS_PER_METER) as usize;
+            for y in 0..(self.width*POINTS_PER_METER) as usize{
+                for x in 0..X_SIZE as usize{
+                    let pixel = Colour::newFromTempJPG(gradientPack[i][x+y*X_SIZE].value);
+                    img.put_pixel(x as u32, y as u32, Rgb([pixel.r, pixel.g, pixel.b]))
+                }
+            }
+
+            for rack in &self.map{
+                for x in (rack.leftAngle.x*POINTS_PER_METER) as usize..=((rack.leftAngle.x + rack.length) * POINTS_PER_METER) as usize {
+                    for y in (rack.leftAngle.y*POINTS_PER_METER) as usize..=((rack.leftAngle.y + rack.width) * POINTS_PER_METER) as usize {
+                        img.put_pixel(x as u32, y as u32, Rgb([0, 0, 0]))
+                    }
+                }
+
+            }
+
+            img.save(filename).unwrap();
+        }
+
+    }
     pub fn isInsideRack(&self, point: &Point) -> bool {
         for rack in &self.map {
             if (rack.isInside(point)) { return true; }

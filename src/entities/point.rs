@@ -5,6 +5,9 @@ pub struct Point {
 }
 
 impl Point {
+    pub fn print(&self) {
+        print!("({}, {}, {})", self.x, self.y, self.z);
+    }
     /// Расстояние до другой точки
     pub fn distance(&self, p2: &Point) -> f32 {
         let dx = p2.x - self.x;

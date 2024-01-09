@@ -4,6 +4,10 @@ pub struct Vector(pub f32, pub f32, pub f32);
 
 impl Vector {
 
+    pub fn print(&self) {
+        print!("({}, {}, {})", self.0, self.1, self.2);
+    }
+
     pub fn new(begin: &Point, end: &Point) -> Vector {
         return Vector(end.x-begin.x, end.y-begin.y, end.y-begin.y);
     }

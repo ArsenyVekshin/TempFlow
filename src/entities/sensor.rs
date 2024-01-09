@@ -32,8 +32,10 @@ pub struct Sensor {
 impl Sensor{
 
     pub fn print(&self) {
-        print!("Sensor id: {}, name: {}, temp: {}, address: {}, protocol: {:?}, key: {}) \n",
+        print!("Sensor id: {}, name: {}, temp: {}, address: {}, protocol: {:?}, key: {}) - ",
                self.id, self.name, self.temp, self.address, self.protocol, self.key);
+        self.position.print();
+        println!();
     }
 
     pub async fn request(&mut self) {
