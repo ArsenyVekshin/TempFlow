@@ -1,7 +1,6 @@
+use std::fmt::{Display, Formatter};
 use std::fs::File;
-use std::io;
 use std::io::Write;
-use serde::{Deserialize, Serialize};
 
 use crate::entities::point::Point;
 use crate::entities::rack::Rack;
@@ -12,6 +11,7 @@ use crate::utils::stl::{gradientLayerSTL, wallsSTL};
 
 /// Контейнер для хранения данных о помещении
 pub struct Room {
+    pub id: u32,
     pub(crate) name: String,
     pub(crate) owner: User,
     pub length: &'static f32,
@@ -25,6 +25,26 @@ pub struct Room {
 
 impl Room {
 
+    pub fn print(&self) {
+        println!("Room( id: {}, name: {}, owner: {}, length: {}, width: {}, height: {} )\n",
+                 self.id, self.owner.username, self.name, self.length, self.width, self.height);
+        for rack in &self.map{
+            rack.print();
+            for sens in &rack.serverSens {
+                sens.print();
+            }
+            println!();
+        }
+
+    }
+
+    pub fn isInside(&self, point: &Point) -> bool {
+        return point.x > 0.0 && point.x < *self.length
+            && point.y > 0.0 && point.y < *self.width
+            && point.z > 0.0 && point.z < *self.height
+        ;
+    }
+
     /// Запросить данные со всех датчиков в помещении
     pub fn updateSensors(&mut self) {
         for mut sens in &mut self.sensors {
@@ -32,14 +52,18 @@ impl Room {
                 sens.request();
             }
         }
+        for mut rack in &mut self.map {
+            rack.updateSensors();
+        }
     }
 
     /// Случайно сгенерировать температуры датчиков в помещении
     pub fn emulateSensors(&mut self) {
         for mut sens in &mut self.sensors {
-            if(!sens.isVirtual()) {
-                sens.generateTemp();
-            }
+            sens.generateTemp();
+        }
+        for mut rack in &mut self.map {
+            rack.emulateSensors();
         }
     }
 
@@ -53,8 +77,10 @@ impl Room {
     /// Создается папка "ИМЯ_ПОМЕЩЕНИЯ" и в ней STL файлы для каждого уровня градиента
     pub fn saveAsSTL(&self) {
         let gradientPack = calcGradient(&self);
+        println!(); //DEBUG
         for i in 0..(self.height / HEIGHT_STEP) as usize {
-            let filename = format!("{}/{}.stl", &self.name, i as f32 * HEIGHT_STEP);
+            let filename = format!("C:/TempFlowOut/{}/{}.stl", &self.name, i as f32 * HEIGHT_STEP);
+            println!("Сохраним модель для слоя {} в файл {}", i, filename); //DEBUG
             let mut file = File::create(filename).unwrap();
 
             let header: [u8; 10] = [0; 10]; // записываем пустой заголовок -> файл будет интерпретирован как бинарный
@@ -72,9 +98,9 @@ impl Room {
         }
     }
 
-    pub fn isInsideRack(&self, x: f32, y: f32, z: f32) -> bool {
+    pub fn isInsideRack(&self, point: &Point) -> bool {
         for rack in &self.map {
-            if (rack.isInside(Point { x, y, z })) { return true; }
+            if (rack.isInside(point)) { return true; }
         }
         return false;
     }

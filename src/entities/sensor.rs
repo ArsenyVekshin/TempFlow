@@ -1,14 +1,10 @@
 use std::fmt::format;
-use std::net::UdpSocket;
-use std::panic::catch_unwind;
-use std::ptr::null;
 use rand::Rng;
-use serde::{Deserialize, Serialize};
 use crate::entities::point::Point;
-use crate::entities::sensor::SensorType::UDP;
 
-#[derive(PartialEq)]
-enum SensorType {
+#[derive(PartialEq, Debug)]
+pub enum SensorType {
+    GET,
     UDP,
     TCP,
     SNMP,
@@ -17,35 +13,39 @@ enum SensorType {
     RPC
 }
 
-#[derive(Serialize, Deserialize)]
-struct Trigger {
-    min: f32,
-    max: f32
+pub struct Trigger {
+    pub min: f32,
+    pub max: f32
 }
 
 pub struct Sensor {
-    pub(crate) name: String,
-    pub(crate) position: Point,
-    pub(crate) temp: f32,
-    pub(crate) trig: Trigger,
-    address: String,
-    protocol: SensorType,
-    key: String
+    pub id: u32,
+    pub name: String,
+    pub position: Point,
+    pub temp: f32,
+    pub trig: Trigger,
+    pub address: String,
+    pub protocol: SensorType,
+    pub key: String
 }
 
 impl Sensor{
-    pub fn request(&mut self) {
-        return;
-        /*let mut buf = [0; 4];
-        if(self.protocol == UDP){
-            let socket = UdpSocket::bind(format!("{} {}", &self.address, &self.key ));
-            let (amt, src) = socket.expect("REASON").recv_from(&mut buf);
-        }
-        self.temp = f32::from_be_bytes(buf);*/
+
+    pub fn print(&self) {
+        print!("Sensor id: {}, name: {}, temp: {}, address: {}, protocol: {:?}, key: {}) \n",
+               self.id, self.name, self.temp, self.address, self.protocol, self.key);
+    }
+
+    pub async fn request(&mut self) {
+        let response = reqwest::get(format!("{}/{}", self.address, self.key)).await.unwrap();
+        let body = response.text().await.unwrap();
+        self.temp = body.parse().unwrap();
+        println!("Got data about sensor \'{}\': {}", self.name, body);
     }
 
     pub fn generateTemp(&mut self) {
-        self.temp = self.temp + (rand::thread_rng().gen_range(0..1) as f32 / 100f32);
+        let gen: f32 = rand::thread_rng().gen_range(0.0..100.0);
+        self.temp = self.temp + (gen);
     }
 
     pub fn checkWarn(&self) -> bool {

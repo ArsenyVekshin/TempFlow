@@ -1,6 +1,6 @@
 use crate::entities::point::Point;
 
-pub struct Vector(f32, f32, f32);
+pub struct Vector(pub f32, pub f32, pub f32);
 
 impl Vector {
 

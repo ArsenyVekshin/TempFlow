@@ -6,9 +6,10 @@ use crate::entities::rack::Rack;
 use crate::entities::sensor::Sensor;
 
 pub struct User {
-    username: String,
-    password: String,
-    contact: String
+    pub id: u32,
+    pub username: String,
+    pub password: String,
+    pub contact: String
 }
 
 fn get_hash(password: &str) -> String {
@@ -18,8 +19,9 @@ fn get_hash(password: &str) -> String {
 }
 
 impl User{
-    pub fn new(username: &str, password: &str, contact: &str) -> User {
+    pub fn new(id: u32, username: &str, password: &str, contact: &str) -> User {
         return User {
+            id,
             username: username.to_string(),
             password: get_hash(password),
             contact: contact.to_string()

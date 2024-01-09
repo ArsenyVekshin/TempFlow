@@ -7,6 +7,7 @@ use crate::utils::stl::{wallsSTL};
 
 /// Контейнер для хранения отдельной серверной стойки
 pub struct Rack {
+    pub id: u32,
     /// имя стойки отображаемое для пользователя
     pub(crate) name: String,
     /// левый верхний угол стойки в координатной сетке
@@ -22,6 +23,29 @@ pub struct Rack {
 }
 
 impl Rack {
+
+    pub fn print(&self) {
+        println!("Rack( id: {}, name: {}, length: {}, width: {}, height: {} )\n",
+                 self.id, self.name, self.length, self.width, self.height);
+    }
+
+    /// Запросить данные со всех датчиков в помещении
+    pub fn updateSensors(&mut self) {
+        for mut sens in &mut self.serverSens {
+            if(!sens.isVirtual()) {
+                sens.request();
+            }
+        }
+    }
+
+    /// Случайно сгенерировать температуры датчиков в помещении
+    pub fn emulateSensors(&mut self) {
+        for mut sens in &mut self.serverSens {
+            sens.generateTemp();
+        }
+
+    }
+
     /// Абсолютный центр стойки
     pub fn getCenter(&self) -> Point {
         return Point {
@@ -37,7 +61,7 @@ impl Rack {
     }
 
     /// Лежит ли данная точка в шкафу?
-    pub fn isInside(&self, point: Point) -> bool {
+    pub fn isInside(&self, point: &Point) -> bool {
         return self.leftAngle.x <= point.x && self.leftAngle.x + self.length >= point.x
             && self.leftAngle.y <= point.y && self.leftAngle.y + self.width >= point.y
             && self.leftAngle.z <= point.z && self.leftAngle.z + self.height >= point.z
@@ -63,5 +87,12 @@ impl Rack {
             }
         }
         return self.getMidTemp();
+    }
+
+    pub fn addSensAt(&mut self, mut sensor: Sensor, pos: u8){
+        sensor.position.x = self.getCenter().x;
+        sensor.position.y = self.getCenter().y;
+        sensor.position.y = self.height / self.size as f32 * pos as f32;
+        self.serverSens.push(sensor);
     }
 }

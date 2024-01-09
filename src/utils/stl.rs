@@ -72,8 +72,11 @@ pub fn gradientLayerSTL(room: &Room, layer: &Vec<GradientPoint>, height: f32, fi
             i.y += PIXEL_SIZE;
         }
 
-        for x in 0..X_LEN {
+        'pixel_loop: for x in 0..X_LEN {
             for i in [&mut a, &mut b, &mut c, &mut d] { i.x += PIXEL_SIZE } // свдивгаем вдоль Ox
+            for point in [&a, &b, &c, &d]{
+                if !room.isInside(point) || room.isInsideRack(point) {continue 'pixel_loop; }
+            }
             plateSTL(&a, &b, &c, &d, Colour::newFromTemp(layer[x + y * X_LEN].value).convertAsBinary1(), file);
         }
     }

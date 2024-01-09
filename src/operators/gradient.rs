@@ -4,10 +4,12 @@ use std::fs::{File};
 use crate::entities::point::Point;
 use crate::entities::room::Room;
 
-///Количество точек на площади 1м2
-pub(crate) const POINTS_PER_SQRT_METER: i32 = 1000;
 ///Количество точек на прямой длинной 1м
-pub(crate) const POINTS_PER_METER: f32 = 100.0;
+pub(crate) const POINTS_PER_METER: f32 = 25.0;
+
+///Количество точек на площади 1м2
+pub(crate) const POINTS_PER_SQRT_METER: i32 = 625;
+
 ///растояние от датчика, при котором температура полностью совпадает с его показаниями
 const SENSOR_VALID_DISTANCE: f32 = 0.1;
 /// растояние между слоями температур по высоте
@@ -45,12 +47,13 @@ impl GradientPoint {
             self.value = point.value;
             self.power = if (point.power > 0) { point.power - 1 } else { 0 };
             return true;
-        } else if (point.power > self.power) {
+        } else if (point.power - self.power > POINTS_PER_METER as i32) {
             self.value = (self.value * (self.power as f32) + point.value * (point.power as f32)) / (self.power + point.power) as f32;
             self.power = point.power - self.power;
             return true;
-        } else if (self.power == point.power && (self.value - point.value).abs() > 1.0) {
+        } else if ((self.value - point.value).abs() > 1.0) {
             self.value = (self.value + point.value) / 2.0
+
         }
         return false;
     }
@@ -69,11 +72,10 @@ fn calcMatrixForHeight(room: &Room, level: f32) -> Vec<GradientPoint> {
     let X_LEN: usize = (room.length * POINTS_PER_METER) as usize;
     let POINTS_NUM: usize = (room.length * room.width * (POINTS_PER_SQRT_METER as f32)) as usize;
 
+    println!("Расчет градиента для h = {}m, точек для расчета {}", level, POINTS_NUM);
 
-    let mut matrix: Vec<GradientPoint> = Vec::with_capacity(POINTS_NUM as usize);         // матрица температур (искомый градиент)
-
+    let mut matrix: Vec<GradientPoint> =vec![GradientPoint{ value: 0.0, power: 0 }; POINTS_NUM];         // матрица температур (искомый градиент)
     let mut contourPoints: VecDeque<usize> = VecDeque::with_capacity(1000);
-
 
     let calcArrayPointer = | x: f32, y: f32| -> usize {
         return ((x + y * room.length) * POINTS_PER_METER) as usize;
@@ -81,11 +83,13 @@ fn calcMatrixForHeight(room: &Room, level: f32) -> Vec<GradientPoint> {
 
     /// Заполним сектора стоек в матрице (считаем что в шкафу температура линейна)
     /// TODO: костыль с индексами, так как for не переваривает дробные числа
+    print!("\tРасчет точек внутри шкафов"); //DEBUG
     for rack in &room.map {
+        print!("."); //DEBUG
         let lvl_temp: f32 = rack.getTempAtHeight(level); // температура шкафа
 
-        for x in 0..=((rack.leftAngle.x + rack.length) * POINTS_PER_METER) as usize {
-            for y in 0..=((rack.leftAngle.y + rack.width) * POINTS_PER_METER) as usize {
+        for x in (rack.leftAngle.x*POINTS_PER_METER) as usize..=((rack.leftAngle.x + rack.length) * POINTS_PER_METER) as usize {
+            for y in (rack.leftAngle.y*POINTS_PER_METER) as usize..=((rack.leftAngle.y + rack.width) * POINTS_PER_METER) as usize {
                 let ptr: usize = x + y * X_LEN;
                 matrix[ptr] = GradientPoint::newAbsolutePoint(lvl_temp);
                 for i in [ptr + 1, ptr - 1, ptr - X_LEN, ptr + X_LEN] {
@@ -100,25 +104,37 @@ fn calcMatrixForHeight(room: &Room, level: f32) -> Vec<GradientPoint> {
             }
         }
     }
+    println!("- done"); //DEBUG
 
+    print!("\tРасчет точек датчиков"); //DEBUG
     // Отметим все сенсоры (подходящие по высоте) на градиенте
     for sens in &room.sensors {
+        print!("."); //DEBUG
         if (sens.position.z != level) { continue; }
         let ptr = calcArrayPointer(sens.position.x, sens.position.y);
         matrix[ptr] = GradientPoint { value: sens.temp, power: (SENSOR_VALID_DISTANCE * POINTS_PER_METER) as i32 };
         contourPoints.push_back(ptr);
     }
+    println!("- done"); //DEBUG
 
 
+    print!("\tРасчет влияния точек друг на друга {}/{} ", contourPoints.len(), matrix.len()); //DEBUG
     // увеличиваем контуры шкафов и датчиков, до тех пор пока есть незаполненные точки
     while let Some(point) = contourPoints.pop_front() {
-        for i in [point + 1, point - 1, point - X_LEN, point + X_LEN] {
-            if (i < 0 || i >= POINTS_NUM) { continue; }
+        //println!("{} - calc point \t{}\t{}\t{}", contourPoints.len(), point, matrix[point].value, matrix[point].power); //DEBUGe
+        for i  in [(point + 1)as i32, (point as i32 - 1) , (point as i32- X_LEN as i32), (point + X_LEN) as i32]  {
+            if (i < 0 || i >= POINTS_NUM as i32) { continue; }
+
             let buff = matrix[point];   // TODO: костыль чтобы решить проблему с количеством ссылок
-            if(matrix[i].calcImpactBy(&buff)) {contourPoints.push_back(i);}
+            if(matrix[i as usize].calcImpactBy(&buff)) {
+                if(!contourPoints.contains(&(i as usize))){
+                    contourPoints.push_back(i as usize);
+                }
+            }
             matrix[point] = buff;
         }
     }
+    println!("- done"); //DEBUG
     return matrix;
 }
 
@@ -129,7 +145,9 @@ fn calcMatrixForHeight(room: &Room, level: f32) -> Vec<GradientPoint> {
 fn calcLayersImpact(layers: & mut Vec<Vec<GradientPoint>>) {
     let Z_POWER_DELTA: i32 = (HEIGHT_STEP * POINTS_PER_METER) as i32;
 
+    print!("Расчет влияния слоев градиента друг на друга"); //DEBUG
     for i in 1..layers.len() {
+        print!("."); //DEBUG
         for ptr in 0..layers[i-1].len(){ // применяем к каждой точке слоя
             if (layers[i-1][ptr].isAbsolutePoint() || layers[i][ptr].isAbsolutePoint()) {continue;}
             let buff = layers[i-1][ptr]; // TODO: костыль чтобы решить проблему с количеством ссылок
@@ -137,6 +155,8 @@ fn calcLayersImpact(layers: & mut Vec<Vec<GradientPoint>>) {
             layers[i-1][ptr] = buff;
         }
     }
+    println!("- done"); //DEBUG
+
 }
 
 
